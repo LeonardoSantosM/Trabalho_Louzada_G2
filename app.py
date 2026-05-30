@@ -93,14 +93,19 @@ with st.sidebar:
     ano_range = st.slider("Período (ano)", min_value=int(min(anos)), max_value=int(max(anos)),
                           value=(int(min(anos)), int(max(anos))))
 
+    # Filtro 1: Região
     regioes = st.multiselect("Região", sorted(df_raw["regiao"].unique()),
                              default=sorted(df_raw["regiao"].unique()))
 
-    biomas = st.multiselect("Bioma", sorted(df_raw["bioma"].unique()),
-                            default=sorted(df_raw["bioma"].unique()))
+    # Filtro 2: Bioma — só mostra biomas presentes nas regiões selecionadas
+    df_filtro1 = df_raw[df_raw["regiao"].isin(regioes)] if regioes else df_raw
+    biomas_disponiveis = sorted(df_filtro1["bioma"].unique())
+    biomas = st.multiselect("Bioma", biomas_disponiveis, default=biomas_disponiveis)
 
-    riscos = st.multiselect("Nível de Risco", ["Baixo", "Médio", "Alto", "Crítico"],
-                            default=["Baixo", "Médio", "Alto", "Crítico"])
+    # Filtro 3: Nível de risco — só mostra riscos presentes nos biomas selecionados
+    df_filtro2 = df_filtro1[df_filtro1["bioma"].isin(biomas)] if biomas else df_filtro1
+    riscos_disponiveis = [r for r in ["Baixo", "Médio", "Alto", "Crítico"] if r in df_filtro2["nivel_risco"].values]
+    riscos = st.multiselect("Nível de Risco", riscos_disponiveis, default=riscos_disponiveis)
 
     st.markdown("---")
     st.markdown("**Fonte:** Dados simulados — INPE  \n**Disciplina:** Análise e Visualização de Dados com Python")
