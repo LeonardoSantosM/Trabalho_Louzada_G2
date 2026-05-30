@@ -16,51 +16,31 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── CSS personalizado ───────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    .main-title {
-        font-size: 2.4rem;
-        font-weight: 800;
-        color: #C0392B;
-        margin-bottom: 0.2rem;
-    }
-    .subtitle {
-        font-size: 1.1rem;
-        color: #7F8C8D;
-        margin-bottom: 1.5rem;
-    }
-    .kpi-card {
-        background: linear-gradient(135deg, #1a1a2e, #16213e);
-        border-left: 4px solid #E74C3C;
-        border-radius: 8px;
-        padding: 1rem 1.2rem;
-        color: white;
-    }
+    .main-title { font-size: 2.4rem; font-weight: 800; color: #C0392B; margin-bottom: 0.2rem; }
+    .subtitle { font-size: 1.1rem; color: #7F8C8D; margin-bottom: 1.5rem; }
+    .kpi-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-left: 4px solid #E74C3C; border-radius: 8px; padding: 1rem 1.2rem; color: white; }
     .kpi-label { font-size: 0.8rem; color: #BDC3C7; text-transform: uppercase; letter-spacing: 1px; }
     .kpi-value { font-size: 2rem; font-weight: 700; color: #E74C3C; }
     .kpi-delta { font-size: 0.85rem; color: #2ECC71; }
-    .section-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #2C3E50;
-        border-bottom: 2px solid #E74C3C;
-        padding-bottom: 0.3rem;
-        margin: 1.5rem 0 1rem 0;
-    }
-    .insight-box {
-        background: #FEF9F0;
-        border-left: 4px solid #F39C12;
-        border-radius: 6px;
-        padding: 0.8rem 1rem;
-        margin: 0.5rem 0;
-        font-size: 0.95rem;
-        color: #2C3E50;
-    }
+    .section-title { font-size: 1.3rem; font-weight: 700; color: #2C3E50; border-bottom: 2px solid #E74C3C; padding-bottom: 0.3rem; margin: 1.5rem 0 1rem 0; }
+    .insight-box { background: #FEF9F0; border-left: 4px solid #F39C12; border-radius: 6px; padding: 0.8rem 1rem; margin: 0.5rem 0; font-size: 0.95rem; color: #2C3E50; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Banco de dados SQLite (funcionalidade avançada) ─────────────────────────
+# ── Layout padrão Plotly (texto preto) ──────────────────────────────────────
+LAYOUT = dict(
+    plot_bgcolor="#FAFAFA",
+    paper_bgcolor="white",
+    font=dict(color="#2C3E50", size=12),
+    title_font=dict(color="#2C3E50", size=14),
+    legend=dict(font=dict(color="#2C3E50")),
+    xaxis=dict(tickfont=dict(color="#2C3E50"), title_font=dict(color="#2C3E50")),
+    yaxis=dict(tickfont=dict(color="#2C3E50"), title_font=dict(color="#2C3E50")),
+)
+
+# ── Banco de dados SQLite ───────────────────────────────────────────────────
 DB_PATH = "database/queimadas.db"
 
 @st.cache_resource
@@ -78,13 +58,12 @@ def load_data(csv_path: str):
     df["trimestre"] = df["data"].dt.quarter.map({1: "T1", 2: "T2", 3: "T3", 4: "T4"})
     return df
 
-# ── Caminhos ────────────────────────────────────────────────────────────────
 CSV_PATH = "dados/simulacao_queimadas_brasil.csv"
 engine = init_db(CSV_PATH)
 df_raw = load_data(CSV_PATH)
 
 # ══════════════════════════════════════════════════════════
-# SIDEBAR — Filtros múltiplos (funcionalidade intermediária)
+# SIDEBAR — Filtros múltiplos independentes
 # ══════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("## 🔍 Filtros")
@@ -125,7 +104,7 @@ if df.empty:
     st.stop()
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 1 — KPIs Dinâmicos
+# SEÇÃO 1 — KPIs
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📊 Indicadores-Chave (KPIs)</div>', unsafe_allow_html=True)
 
@@ -168,7 +147,7 @@ with col_a:
                        title="Evolução Anual de Focos de Queimada",
                        markers=True, color_discrete_sequence=["#E74C3C"],
                        labels={"ano": "Ano", "focos_queimada": "Focos"})
-    fig_line.update_layout(plot_bgcolor="#FAFAFA", paper_bgcolor="white")
+    fig_line.update_layout(**LAYOUT)
     st.plotly_chart(fig_line, use_container_width=True)
 
 with col_b:
@@ -178,13 +157,13 @@ with col_b:
                      title="Média Mensal de Focos (sazonalidade)",
                      color="focos_queimada", color_continuous_scale="Reds",
                      labels={"mes_nome": "Mês", "focos_queimada": "Média de Focos"})
-    fig_bar.update_layout(plot_bgcolor="#FAFAFA", paper_bgcolor="white", coloraxis_showscale=False)
+    fig_bar.update_layout(**LAYOUT, coloraxis_showscale=False)
     st.plotly_chart(fig_bar, use_container_width=True)
 
 st.markdown('<div class="insight-box">💡 <b>Insight:</b> Os meses de agosto a outubro concentram historicamente os maiores picos de queimada no Brasil, coincidindo com o período de seca nas regiões Norte e Centro-Oeste.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 3 — Análise por Região e Bioma
+# SEÇÃO 3 — Região e Bioma
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">🗺️ Distribuição por Região e Bioma</div>', unsafe_allow_html=True)
 
@@ -196,7 +175,7 @@ with col_c:
                      title="Total de Focos por Região",
                      color="focos_queimada", color_continuous_scale="Oranges",
                      labels={"regiao": "Região", "focos_queimada": "Focos"})
-    fig_reg.update_layout(plot_bgcolor="#FAFAFA", paper_bgcolor="white", coloraxis_showscale=False)
+    fig_reg.update_layout(**LAYOUT, coloraxis_showscale=False)
     st.plotly_chart(fig_reg, use_container_width=True)
 
 with col_d:
@@ -204,12 +183,13 @@ with col_d:
     fig_pie = px.pie(focos_bioma, names="bioma", values="area_atingida_km2",
                      title="Área Atingida por Bioma (km²)",
                      color_discrete_sequence=px.colors.sequential.RdBu)
-    fig_pie.update_traces(textposition="inside", textinfo="percent+label")
-    fig_pie.update_layout(paper_bgcolor="white", showlegend=False)
+    fig_pie.update_traces(textposition="inside", textinfo="percent+label",
+                          textfont=dict(color="white"))
+    fig_pie.update_layout(**LAYOUT, showlegend=False)
     st.plotly_chart(fig_pie, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 4 — Correlação Estatística (funcionalidade avançada)
+# SEÇÃO 4 — Correlação Estatística
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📈 Correlações Estatísticas</div>', unsafe_allow_html=True)
 
@@ -219,10 +199,14 @@ with col_e:
     numeric_cols = ["focos_queimada", "temperatura_media", "chuva_mm",
                     "area_atingida_km2", "indice_seca", "qualidade_ar"]
     corr = df[numeric_cols].corr()
-    fig_corr, ax = plt.subplots(figsize=(6, 5))
+    fig_corr, ax = plt.subplots(figsize=(6, 5), facecolor="white")
+    ax.set_facecolor("#FAFAFA")
     sns.heatmap(corr, annot=True, fmt=".2f", cmap="RdYlGn_r",
-                linewidths=0.5, ax=ax, annot_kws={"size": 9})
-    ax.set_title("Mapa de Correlação entre Variáveis", fontsize=12, fontweight="bold")
+                linewidths=0.5, ax=ax, annot_kws={"size": 9, "color": "#2C3E50"})
+    ax.set_title("Mapa de Correlação entre Variáveis", fontsize=12, fontweight="bold", color="#2C3E50")
+    ax.tick_params(colors="#2C3E50")
+    plt.setp(ax.get_xticklabels(), color="#2C3E50")
+    plt.setp(ax.get_yticklabels(), color="#2C3E50")
     plt.tight_layout()
     st.pyplot(fig_corr)
 
@@ -232,7 +216,7 @@ with col_f:
                              title="Índice de Seca vs. Focos de Queimada",
                              labels={"indice_seca": "Índice de Seca", "focos_queimada": "Focos"},
                              opacity=0.7, hover_data=["uf", "bioma"])
-    fig_scatter.update_layout(plot_bgcolor="#FAFAFA", paper_bgcolor="white")
+    fig_scatter.update_layout(**LAYOUT)
     st.plotly_chart(fig_scatter, use_container_width=True)
 
 st.markdown('<div class="insight-box">💡 <b>Insight:</b> Existe correlação positiva entre índice de seca e número de focos, e correlação negativa entre chuva e área atingida — confirmando que secas prolongadas potencializam a propagação das queimadas.</div>', unsafe_allow_html=True)
@@ -243,31 +227,30 @@ st.markdown('<div class="insight-box">💡 <b>Insight:</b> Existe correlação p
 st.markdown('<div class="section-title">⚠️ Distribuição do Nível de Risco</div>', unsafe_allow_html=True)
 
 col_g, col_h = st.columns(2)
+ordem_risco = ["Baixo", "Médio", "Alto", "Crítico"]
 
 with col_g:
-    risco_ordem = ["Baixo", "Médio", "Alto", "Crítico"]
     risco_cores = {"Baixo": "#2ECC71", "Médio": "#F39C12", "Alto": "#E67E22", "Crítico": "#C0392B"}
-    risco_count = df["nivel_risco"].value_counts().reindex(risco_ordem).dropna().reset_index()
+    risco_count = df["nivel_risco"].value_counts().reindex(ordem_risco).dropna().reset_index()
     risco_count.columns = ["nivel_risco", "count"]
     fig_risco = px.bar(risco_count, x="nivel_risco", y="count",
                        title="Frequência por Nível de Risco",
                        color="nivel_risco", color_discrete_map=risco_cores,
                        labels={"nivel_risco": "Nível de Risco", "count": "Registros"})
-    fig_risco.update_layout(plot_bgcolor="#FAFAFA", paper_bgcolor="white", showlegend=False)
+    fig_risco.update_layout(**LAYOUT, showlegend=False)
     st.plotly_chart(fig_risco, use_container_width=True)
 
 with col_h:
-    risco_bioma = df.groupby(["bioma", "nivel_risco"]).size().reset_index(name="count")
     fig_heat = px.density_heatmap(df, x="bioma", y="nivel_risco",
                                   title="Concentração de Risco por Bioma",
-                                  category_orders={"nivel_risco": risco_ordem},
+                                  category_orders={"nivel_risco": ordem_risco},
                                   color_continuous_scale="Reds",
                                   labels={"bioma": "Bioma", "nivel_risco": "Risco"})
-    fig_heat.update_layout(plot_bgcolor="#FAFAFA", paper_bgcolor="white")
+    fig_heat.update_layout(**LAYOUT)
     st.plotly_chart(fig_heat, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 6 — Tabela de dados filtrados
+# SEÇÃO 6 — Tabela
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📋 Dados Filtrados</div>', unsafe_allow_html=True)
 
@@ -279,26 +262,25 @@ st.dataframe(
     use_container_width=True,
     height=300,
 )
-
 st.caption(f"Exibindo {len(df):,} registros de {len(df_raw):,} no total.")
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 7 — Conclusão executiva
+# SEÇÃO 7 — Conclusão
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📝 Conclusão Executiva</div>', unsafe_allow_html=True)
 
 st.markdown("""
-O presente painel analisou **{:,} registros** de focos de queimada no Brasil entre **{} e {}**, 
+O presente painel analisou **{:,} registros** de focos de queimada no Brasil entre **{} e {}**,
 abrangendo **{} regiões**, **{} biomas** e **{} estados**.
 
 **Principais achados:**
 - A região **Norte** concentra o maior volume de focos, especialmente nos estados do Pará e Amazonas.
 - O **Cerrado** e a **Amazônia** são os biomas com maior área atingida por queimadas.
-- Existe forte correlação entre **índice de seca elevado** e aumento de focos — indicando que o monitoramento climático é fundamental para a prevenção.
-- Os meses de **agosto a outubro** representam o período crítico de risco, alinhado à estação seca.
-- Eventos classificados como **Crítico** representam {:.1f}% dos registros, mas respondem por uma parcela desproporcional da área destruída.
+- Existe forte correlação entre **índice de seca elevado** e aumento de focos.
+- Os meses de **agosto a outubro** representam o período crítico de risco.
+- Eventos classificados como **Crítico** representam {:.1f}% dos registros.
 
-**Recomendação:** Investir em sistemas de alerta precoce integrados ao índice de seca e temperatura, 
+**Recomendação:** Investir em sistemas de alerta precoce integrados ao índice de seca e temperatura,
 priorizando ações preventivas nas regiões Norte e Centro-Oeste durante o segundo semestre.
 """.format(
     len(df),
