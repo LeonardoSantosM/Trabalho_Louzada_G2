@@ -18,8 +18,8 @@ O objetivo é identificar padrões temporais e espaciais, correlações entre cl
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/SEU_USUARIO/projeto-g2.git
-cd projeto-g2
+git clone https://github.com/LeonardoSantosM/Trabalho_Louzada_G2.git
+cd Trabalho_Louzada_G2
 ```
 
 ### 2. Crie um ambiente virtual e instale as dependências
@@ -49,7 +49,7 @@ jupyter notebook notebooks/analise_queimadas.ipynb
 ## 📁 Estrutura do Projeto
 
 ```
-projeto-g2/
+Trabalho_Louzada_G2/
 │
 ├── app.py                          # Dashboard Streamlit
 ├── requirements.txt                # Dependências Python
@@ -85,7 +85,7 @@ projeto-g2/
 | NumPy | Operações numéricas |
 
 ### Funcionalidades Intermediárias
-- ✅ Filtros múltiplos no Streamlit (região, bioma, período, nível de risco)
+- ✅ Filtros múltiplos no Streamlit (região, bioma, nível de risco, período)
 - ✅ KPIs dinâmicos (atualizam conforme filtros)
 - ✅ Gráficos interativos (Plotly)
 - ✅ Análise temporal (evolução anual e sazonalidade mensal)
@@ -109,9 +109,9 @@ projeto-g2/
 
 ## 🔗 Links
 
-- 📁 **Repositório GitHub:** [github.com/SEU_USUARIO/projeto-g2](https://github.com/SEU_USUARIO/projeto-g2)
-- 🌐 **GitHub Pages:** [SEU_USUARIO.github.io/projeto-g2](https://SEU_USUARIO.github.io/projeto-g2)
-- 📊 **Dashboard Streamlit:** [seu-projeto.streamlit.app](https://seu-projeto.streamlit.app)
+- 📁 **Repositório GitHub:** [github.com/LeonardoSantosM/Trabalho_Louzada_G2](https://github.com/LeonardoSantosM/Trabalho_Louzada_G2)
+- 🌐 **GitHub Pages:** [leonardosantosm.github.io/Trabalho_Louzada_G2](https://leonardosantosm.github.io/Trabalho_Louzada_G2/)
+- 📊 **Dashboard Streamlit:** [trabalholouzadag2.streamlit.app](https://trabalholouzadag2-cmejao59ub6qfdja96jiwg.streamlit.app/)
 
 ---
 
