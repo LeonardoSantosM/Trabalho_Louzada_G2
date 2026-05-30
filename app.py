@@ -16,20 +16,51 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── CSS personalizado ───────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    .main-title { font-size: 2.4rem; font-weight: 800; color: #C0392B; margin-bottom: 0.2rem; }
-    .subtitle { font-size: 1.1rem; color: #7F8C8D; margin-bottom: 1.5rem; }
-    .kpi-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-left: 4px solid #E74C3C; border-radius: 8px; padding: 1rem 1.2rem; color: white; }
+    .main-title {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #C0392B;
+        margin-bottom: 0.2rem;
+    }
+    .subtitle {
+        font-size: 1.1rem;
+        color: #7F8C8D;
+        margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border-left: 4px solid #E74C3C;
+        border-radius: 8px;
+        padding: 1rem 1.2rem;
+        color: white;
+    }
     .kpi-label { font-size: 0.8rem; color: #BDC3C7; text-transform: uppercase; letter-spacing: 1px; }
     .kpi-value { font-size: 2rem; font-weight: 700; color: #E74C3C; }
     .kpi-delta { font-size: 0.85rem; color: #2ECC71; }
-    .section-title { font-size: 1.3rem; font-weight: 700; color: #2C3E50; border-bottom: 2px solid #E74C3C; padding-bottom: 0.3rem; margin: 1.5rem 0 1rem 0; }
-    .insight-box { background: #FEF9F0; border-left: 4px solid #F39C12; border-radius: 6px; padding: 0.8rem 1rem; margin: 0.5rem 0; font-size: 0.95rem; color: #2C3E50; }
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2C3E50;
+        border-bottom: 2px solid #E74C3C;
+        padding-bottom: 0.3rem;
+        margin: 1.5rem 0 1rem 0;
+    }
+    .insight-box {
+        background: #FEF9F0;
+        border-left: 4px solid #F39C12;
+        border-radius: 6px;
+        padding: 0.8rem 1rem;
+        margin: 0.5rem 0;
+        font-size: 0.95rem;
+        color: #2C3E50;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Banco de dados SQLite ───────────────────────────────────────────────────
+# ── Banco de dados SQLite (funcionalidade avançada) ─────────────────────────
 DB_PATH = "database/queimadas.db"
 
 @st.cache_resource
@@ -47,12 +78,13 @@ def load_data(csv_path: str):
     df["trimestre"] = df["data"].dt.quarter.map({1: "T1", 2: "T2", 3: "T3", 4: "T4"})
     return df
 
+# ── Caminhos ────────────────────────────────────────────────────────────────
 CSV_PATH = "dados/simulacao_queimadas_brasil.csv"
 engine = init_db(CSV_PATH)
 df_raw = load_data(CSV_PATH)
 
 # ══════════════════════════════════════════════════════════
-# SIDEBAR — Filtros encadeados
+# SIDEBAR — Filtros múltiplos (funcionalidade intermediária)
 # ══════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("## 🔍 Filtros")
@@ -61,36 +93,25 @@ with st.sidebar:
     ano_range = st.slider("Período (ano)", min_value=int(min(anos)), max_value=int(max(anos)),
                           value=(int(min(anos)), int(max(anos))))
 
-    # Filtro 1: Região
-    todas_regioes = sorted(df_raw["regiao"].unique())
-    regioes = st.multiselect("Região", todas_regioes, default=todas_regioes)
-    regioes_ativas = regioes if regioes else todas_regioes
+    regioes = st.multiselect("Região", sorted(df_raw["regiao"].unique()),
+                             default=sorted(df_raw["regiao"].unique()))
 
-    # Filtro 2: Bioma — atualiza conforme regiões
-    df_step1 = df_raw[df_raw["regiao"].isin(regioes_ativas)]
-    biomas_disponiveis = sorted(df_step1["bioma"].unique())
-    biomas = st.multiselect("Bioma", biomas_disponiveis, default=biomas_disponiveis,
-                            key=f"bioma_{'_'.join(regioes_ativas)}")
-    biomas_ativos = biomas if biomas else biomas_disponiveis
+    biomas = st.multiselect("Bioma", sorted(df_raw["bioma"].unique()),
+                            default=sorted(df_raw["bioma"].unique()))
 
-    # Filtro 3: Nível de risco — atualiza conforme biomas
-    df_step2 = df_step1[df_step1["bioma"].isin(biomas_ativos)]
-    ordem_risco = ["Baixo", "Médio", "Alto", "Crítico"]
-    riscos_disponiveis = [r for r in ordem_risco if r in df_step2["nivel_risco"].values]
-    riscos = st.multiselect("Nível de Risco", riscos_disponiveis, default=riscos_disponiveis,
-                            key=f"risco_{'_'.join(biomas_ativos)}")
-    riscos_ativos = riscos if riscos else riscos_disponiveis
+    riscos = st.multiselect("Nível de Risco", ["Baixo", "Médio", "Alto", "Crítico"],
+                            default=["Baixo", "Médio", "Alto", "Crítico"])
 
     st.markdown("---")
     st.markdown("**Fonte:** Dados simulados — INPE  \n**Disciplina:** Análise e Visualização de Dados com Python")
 
-# ── Filtragem final ──────────────────────────────────────────────────────────
+# ── Filtragem ────────────────────────────────────────────────────────────────
 df = df_raw[
     (df_raw["ano"] >= ano_range[0]) &
     (df_raw["ano"] <= ano_range[1]) &
-    (df_raw["regiao"].isin(regioes_ativas)) &
-    (df_raw["bioma"].isin(biomas_ativos)) &
-    (df_raw["nivel_risco"].isin(riscos_ativos))
+    (df_raw["regiao"].isin(regioes)) &
+    (df_raw["bioma"].isin(biomas)) &
+    (df_raw["nivel_risco"].isin(riscos))
 ].copy()
 
 # ══════════════════════════════════════════════════════════
@@ -104,7 +125,7 @@ if df.empty:
     st.stop()
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 1 — KPIs
+# SEÇÃO 1 — KPIs Dinâmicos
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📊 Indicadores-Chave (KPIs)</div>', unsafe_allow_html=True)
 
@@ -163,7 +184,7 @@ with col_b:
 st.markdown('<div class="insight-box">💡 <b>Insight:</b> Os meses de agosto a outubro concentram historicamente os maiores picos de queimada no Brasil, coincidindo com o período de seca nas regiões Norte e Centro-Oeste.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 3 — Região e Bioma
+# SEÇÃO 3 — Análise por Região e Bioma
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">🗺️ Distribuição por Região e Bioma</div>', unsafe_allow_html=True)
 
@@ -188,7 +209,7 @@ with col_d:
     st.plotly_chart(fig_pie, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 4 — Correlação Estatística
+# SEÇÃO 4 — Correlação Estatística (funcionalidade avançada)
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📈 Correlações Estatísticas</div>', unsafe_allow_html=True)
 
@@ -224,8 +245,9 @@ st.markdown('<div class="section-title">⚠️ Distribuição do Nível de Risco
 col_g, col_h = st.columns(2)
 
 with col_g:
+    risco_ordem = ["Baixo", "Médio", "Alto", "Crítico"]
     risco_cores = {"Baixo": "#2ECC71", "Médio": "#F39C12", "Alto": "#E67E22", "Crítico": "#C0392B"}
-    risco_count = df["nivel_risco"].value_counts().reindex(ordem_risco).dropna().reset_index()
+    risco_count = df["nivel_risco"].value_counts().reindex(risco_ordem).dropna().reset_index()
     risco_count.columns = ["nivel_risco", "count"]
     fig_risco = px.bar(risco_count, x="nivel_risco", y="count",
                        title="Frequência por Nível de Risco",
@@ -235,16 +257,17 @@ with col_g:
     st.plotly_chart(fig_risco, use_container_width=True)
 
 with col_h:
+    risco_bioma = df.groupby(["bioma", "nivel_risco"]).size().reset_index(name="count")
     fig_heat = px.density_heatmap(df, x="bioma", y="nivel_risco",
                                   title="Concentração de Risco por Bioma",
-                                  category_orders={"nivel_risco": ordem_risco},
+                                  category_orders={"nivel_risco": risco_ordem},
                                   color_continuous_scale="Reds",
                                   labels={"bioma": "Bioma", "nivel_risco": "Risco"})
     fig_heat.update_layout(plot_bgcolor="#FAFAFA", paper_bgcolor="white")
     st.plotly_chart(fig_heat, use_container_width=True)
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 6 — Tabela
+# SEÇÃO 6 — Tabela de dados filtrados
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📋 Dados Filtrados</div>', unsafe_allow_html=True)
 
@@ -256,25 +279,26 @@ st.dataframe(
     use_container_width=True,
     height=300,
 )
+
 st.caption(f"Exibindo {len(df):,} registros de {len(df_raw):,} no total.")
 
 # ══════════════════════════════════════════════════════════
-# SEÇÃO 7 — Conclusão
+# SEÇÃO 7 — Conclusão executiva
 # ══════════════════════════════════════════════════════════
 st.markdown('<div class="section-title">📝 Conclusão Executiva</div>', unsafe_allow_html=True)
 
 st.markdown("""
-O presente painel analisou **{:,} registros** de focos de queimada no Brasil entre **{} e {}**,
+O presente painel analisou **{:,} registros** de focos de queimada no Brasil entre **{} e {}**, 
 abrangendo **{} regiões**, **{} biomas** e **{} estados**.
 
 **Principais achados:**
 - A região **Norte** concentra o maior volume de focos, especialmente nos estados do Pará e Amazonas.
 - O **Cerrado** e a **Amazônia** são os biomas com maior área atingida por queimadas.
-- Existe forte correlação entre **índice de seca elevado** e aumento de focos.
-- Os meses de **agosto a outubro** representam o período crítico de risco.
-- Eventos classificados como **Crítico** representam {:.1f}% dos registros.
+- Existe forte correlação entre **índice de seca elevado** e aumento de focos — indicando que o monitoramento climático é fundamental para a prevenção.
+- Os meses de **agosto a outubro** representam o período crítico de risco, alinhado à estação seca.
+- Eventos classificados como **Crítico** representam {:.1f}% dos registros, mas respondem por uma parcela desproporcional da área destruída.
 
-**Recomendação:** Investir em sistemas de alerta precoce integrados ao índice de seca e temperatura,
+**Recomendação:** Investir em sistemas de alerta precoce integrados ao índice de seca e temperatura, 
 priorizando ações preventivas nas regiões Norte e Centro-Oeste durante o segundo semestre.
 """.format(
     len(df),
