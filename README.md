@@ -108,3 +108,6 @@ Trabalho_Louzada_G2/
 ## 📚 Fonte dos Dados
 
 Dados simulados com base na metodologia do **INPE** (Instituto Nacional de Pesquisas Espaciais) — Programa de Monitoramento de Queimadas.
+
+## Integrantes - 
+Leonardo Martins e Victor Oliveira
