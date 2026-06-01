@@ -267,7 +267,7 @@ st.caption(f"Exibindo {len(df):,} registros de {len(df_raw):,} no total.")
 # ══════════════════════════════════════════════════════════
 # SEÇÃO 7 — Conclusão
 # ══════════════════════════════════════════════════════════
-st.markdown('<div class="section-title">📝 Conclusão Executiva</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">📝 Conclusão</div>', unsafe_allow_html=True)
 
 st.markdown("""
 O presente painel analisou **{:,} registros** de focos de queimada no Brasil entre **{} e {}**,
