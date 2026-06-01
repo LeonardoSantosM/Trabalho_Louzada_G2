@@ -109,5 +109,5 @@ Trabalho_Louzada_G2/
 
 Dados simulados com base na metodologia do **INPE** (Instituto Nacional de Pesquisas Espaciais) — Programa de Monitoramento de Queimadas.
 
-## Integrantes - 
+## Integrantes 
 Leonardo Martins e Victor Oliveira
