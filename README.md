@@ -22,16 +22,6 @@ git clone https://github.com/LeonardoSantosM/Trabalho_Louzada_G2.git
 cd Trabalho_Louzada_G2
 ```
 
-### 2. Crie um ambiente virtual e instale as dependências
-
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-
-pip install -r requirements.txt
-```
-
 ### 3. Execute o dashboard
 
 ```bash
